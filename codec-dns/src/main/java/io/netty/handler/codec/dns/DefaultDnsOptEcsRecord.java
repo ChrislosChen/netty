@@ -63,7 +63,7 @@ public final class DefaultDnsOptEcsRecord extends AbstractDnsOptPseudoRrRecord i
      *                       send the query.
      */
     public DefaultDnsOptEcsRecord(int maxPayloadSize, InternetProtocolFamily protocolFamily) {
-        this(maxPayloadSize, 0, 0, 0, protocolFamily.localHost().getAddress());
+        this(maxPayloadSize, 0, 0, 0, protocolFamily.localhost().getAddress());
     }
 
     private static byte[] verifyAddress(byte[] bytes) {

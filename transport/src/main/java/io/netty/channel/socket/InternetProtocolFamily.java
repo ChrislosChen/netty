@@ -35,7 +35,7 @@ public enum InternetProtocolFamily {
     InternetProtocolFamily(Class<? extends InetAddress> addressType) {
         this.addressType = addressType;
         addressNumber = addressNumber(addressType);
-        localHost = localHost(addressType);
+        localHost = localhost(addressType);
     }
 
     /**
@@ -57,11 +57,11 @@ public enum InternetProtocolFamily {
     /**
      * Returns the {@link InetAddress} that represent the {@code LOCALHOST} for the family.
      */
-    public InetAddress localHost() {
+    public InetAddress localhost() {
         return localHost;
     }
 
-    private static InetAddress localHost(Class<? extends InetAddress> addressType) {
+    private static InetAddress localhost(Class<? extends InetAddress> addressType) {
         if (addressType.isAssignableFrom(Inet4Address.class)) {
             return NetUtil.LOCALHOST4;
         }
