@@ -19,6 +19,7 @@ import io.netty.channel.socket.InternetProtocolFamily;
 import io.netty.util.internal.UnstableApi;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 
 /**
  * Default {@link DnsOptEcsRecord} implementation.
@@ -86,5 +87,18 @@ public final class DefaultDnsOptEcsRecord extends AbstractDnsOptPseudoRrRecord i
     @Override
     public byte[] address() {
         return address.clone();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = toStringBuilder();
+        sb.setLength(sb.length() - 1);
+        return sb.append(" address:")
+          .append(Arrays.toString(address))
+          .append(" sourcePrefixLength:")
+          .append(sourcePrefixLength())
+          .append(" scopePrefixLength:")
+          .append(scopePrefixLength())
+          .append(')').toString();
     }
 }

@@ -22,8 +22,6 @@ import io.netty.handler.codec.UnsupportedMessageTypeException;
 import io.netty.util.internal.StringUtil;
 import io.netty.util.internal.UnstableApi;
 
-import java.net.InetAddress;
-
 import static io.netty.handler.codec.dns.DefaultDnsRecordDecoder.ROOT;
 
 /**
@@ -91,8 +89,8 @@ public class DefaultDnsRecordEncoder implements DnsRecordEncoder {
         byte[] bytes = record.address();
         int addressBits = bytes.length << 3;
         if (addressBits < sourcePrefixLength || sourcePrefixLength < 0) {
-            throw new IllegalArgumentException(sourcePrefixLength + ": "
-                    + sourcePrefixLength + " (expected: 0 >= " + addressBits + ')');
+            throw new IllegalArgumentException(sourcePrefixLength + ": " +
+                    sourcePrefixLength + " (expected: 0 >= " + addressBits + ')');
         }
 
         // See http://www.iana.org/assignments/address-family-numbers/address-family-numbers.xhtml
@@ -100,12 +98,12 @@ public class DefaultDnsRecordEncoder implements DnsRecordEncoder {
                 InternetProtocolFamily.IPv4.addressNumber() : InternetProtocolFamily.IPv6.addressNumber());
         int payloadLength = calculateEcsAddressLength(sourcePrefixLength, lowOrderBitsToPreserve);
 
-        int fullPayloadLength = 2 // OPTION-CODE
-                + 2 // OPTION-LENGTH
-                + 2 // FAMILY
-                + 1 // SOURCE PREFIX-LENGTH
-                + 1 // SCOPE PREFIX-LENGTH
-                + payloadLength; //  ADDRESS...
+        int fullPayloadLength = 2 + // OPTION-CODE
+                2 + // OPTION-LENGTH
+                2 + // FAMILY
+                1 + // SOURCE PREFIX-LENGTH
+                1 + // SCOPE PREFIX-LENGTH
+                payloadLength; //  ADDRESS...
 
         out.writeShort(fullPayloadLength);
         out.writeShort(8); // This is the defined type for ECS.
@@ -167,26 +165,26 @@ public class DefaultDnsRecordEncoder implements DnsRecordEncoder {
     // Package private so it can be reused in the test.
     static byte padWithZeros(byte b, int lowOrderBitsToPreserve) {
         switch (lowOrderBitsToPreserve) {
-            case 0:
-                return 0;
-            case 1:
-                return (byte) (0x01 & b);
-            case 2:
-                return (byte) (0x03 & b);
-            case 3:
-                return (byte) (0x07 & b);
-            case 4:
-                return (byte) (0x0F & b);
-            case 5:
-                return (byte) (0x1F & b);
-            case 6:
-                return (byte) (0x3F & b);
-            case 7:
-                return (byte) (0x7F & b);
-            case 8:
-                return b;
-            default:
-                throw new IllegalArgumentException("lowOrderBitsToPreserve: " + lowOrderBitsToPreserve);
+        case 0:
+            return 0;
+        case 1:
+            return (byte) (0x01 & b);
+        case 2:
+            return (byte) (0x03 & b);
+        case 3:
+            return (byte) (0x07 & b);
+        case 4:
+            return (byte) (0x0F & b);
+        case 5:
+            return (byte) (0x1F & b);
+        case 6:
+            return (byte) (0x3F & b);
+        case 7:
+            return (byte) (0x7F & b);
+        case 8:
+            return b;
+        default:
+            throw new IllegalArgumentException("lowOrderBitsToPreserve: " + lowOrderBitsToPreserve);
         }
     }
 }

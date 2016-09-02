@@ -62,7 +62,7 @@ final class DnsQueryContext {
         this.parent = checkNotNull(parent, "parent");
         this.nameServerAddr = checkNotNull(nameServerAddr, "nameServerAddr");
         this.question = checkNotNull(question, "question");
-        this.additionals = additionals;
+        this.additionals = checkNotNull(additionals, "additionals");
         this.promise = checkNotNull(promise, "promise");
         recursionDesired = parent.isRecursionDesired();
         id = parent.queryContextManager.add(this);
@@ -93,10 +93,8 @@ final class DnsQueryContext {
 
         query.addRecord(DnsSection.QUESTION, question);
 
-        if (additionals != null) {
-            for (DnsRecord record: additionals) {
-                query.addRecord(DnsSection.ADDITIONAL, record);
-            }
+        for (DnsRecord record: additionals) {
+            query.addRecord(DnsSection.ADDITIONAL, record);
         }
 
         if (optResource != null) {

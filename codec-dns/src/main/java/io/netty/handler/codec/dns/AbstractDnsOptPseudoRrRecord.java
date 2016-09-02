@@ -55,4 +55,24 @@ public abstract class AbstractDnsOptPseudoRrRecord extends AbstractDnsRecord imp
     public int flags() {
        return (short) ((short) timeToLive() & 0xff);
     }
+
+    @Override
+    public String toString() {
+        return toStringBuilder().toString();
+    }
+
+    final StringBuilder toStringBuilder() {
+        return new StringBuilder(64)
+                .append(StringUtil.simpleClassName(this))
+                .append('(')
+                .append("OPT flags:")
+                .append(flags())
+                .append(" version:")
+                .append(version())
+                .append(" extendedRecode:")
+                .append(extendedRcode())
+                .append(" udp:")
+                .append(dnsClass())
+                .append(')');
+    }
 }

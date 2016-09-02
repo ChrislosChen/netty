@@ -72,6 +72,7 @@ public class DnsNameResolver extends InetNameResolver {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DnsNameResolver.class);
     private static final String LOCALHOST = "localhost";
     private static final InetAddress LOCALHOST_ADDRESS;
+    private static final DnsRecord[] EMTPY_ADDITIONALS = new DnsRecord[0];
 
     static final InternetProtocolFamily[] DEFAULT_RESOLVE_ADDRESS_TYPES = new InternetProtocolFamily[2];
     static final String[] DEFAULT_SEACH_DOMAINS;
@@ -359,11 +360,10 @@ public class DnsNameResolver extends InetNameResolver {
     public final Future<InetAddress> resolve(String inetHost, Iterable<DnsRecord> additionals,
                                              Promise<InetAddress> promise) {
         checkNotNull(inetHost, "inetHost");
-        checkNotNull(additionals, "additionals");
         checkNotNull(promise, "promise");
-
+        DnsRecord[] additionalsArray = toArray(additionals, true);
         try {
-            doResolve(inetHost, validateAdditionals(additionals), promise, resolveCache);
+            doResolve(inetHost, additionalsArray, promise, resolveCache);
             return promise;
         } catch (Exception e) {
             return promise.setFailure(e);
@@ -394,11 +394,10 @@ public class DnsNameResolver extends InetNameResolver {
     public final Future<List<InetAddress>> resolveAll(String inetHost, Iterable<DnsRecord> additionals,
                                                 Promise<List<InetAddress>> promise) {
         checkNotNull(inetHost, "inetHost");
-        checkNotNull(additionals, "additionals");
         checkNotNull(promise, "promise");
-
+        DnsRecord[] additionalsArray = toArray(additionals, true);
         try {
-            doResolveAll(inetHost, additionals, promise, resolveCache);
+            doResolveAll(inetHost, additionalsArray, promise, resolveCache);
             return promise;
         } catch (Exception e) {
             return promise.setFailure(e);
@@ -407,26 +406,31 @@ public class DnsNameResolver extends InetNameResolver {
 
     @Override
     protected void doResolve(String inetHost, Promise<InetAddress> promise) throws Exception {
-        doResolve(inetHost, null, promise, resolveCache);
+        doResolve(inetHost, EMTPY_ADDITIONALS, promise, resolveCache);
     }
 
-    private static DnsRecord[] validateAdditionals(Iterable<DnsRecord> additionals) {
+    private static DnsRecord[] toArray(Iterable<DnsRecord> additionals, boolean validate) {
+        checkNotNull(additionals, "additionals");
         if (additionals instanceof Collection) {
             Collection<DnsRecord> records = (Collection<DnsRecord>) additionals;
-            for (DnsRecord r: additionals) {
-                validateAdditional(r);
+            if (validate) {
+                for (DnsRecord r: additionals) {
+                    validateAdditional(r);
+                }
             }
             return records.toArray(new DnsRecord[records.size()]);
         }
 
         Iterator<DnsRecord> additionalsIt = additionals.iterator();
         if (!additionalsIt.hasNext()) {
-            return null;
+            return EMTPY_ADDITIONALS;
         }
         List<DnsRecord> records = new ArrayList<DnsRecord>();
         do {
             DnsRecord r = additionalsIt.next();
-            validateAdditional(r);
+            if (validate) {
+                validateAdditional(r);
+            }
             records.add(r);
         } while (additionalsIt.hasNext());
 
@@ -561,7 +565,7 @@ public class DnsNameResolver extends InetNameResolver {
 
     @Override
     protected void doResolveAll(String inetHost, Promise<List<InetAddress>> promise) throws Exception {
-        doResolveAll(inetHost, Collections.<DnsRecord>emptySet(), promise, resolveCache);
+        doResolveAll(inetHost, EMTPY_ADDITIONALS, promise, resolveCache);
     }
 
     /**
@@ -569,10 +573,9 @@ public class DnsNameResolver extends InetNameResolver {
      * instead of using the global one.
      */
     protected void doResolveAll(String inetHost,
-                                Iterable<DnsRecord> additionals,
+                                DnsRecord[] additionals,
                                 Promise<List<InetAddress>> promise,
                                 DnsCache resolveCache) throws Exception {
-        DnsRecord[] additionalsArray = validateAdditionals(additionals);
         final byte[] bytes = NetUtil.createByteArrayFromIpAddressString(inetHost);
         if (bytes != null) {
             // The unresolvedAddress was created via a String that contains an ipaddress.
@@ -588,8 +591,8 @@ public class DnsNameResolver extends InetNameResolver {
             return;
         }
 
-        if (!doResolveAllCached(hostname, additionalsArray, promise, resolveCache)) {
-            doResolveAllUncached(hostname, additionalsArray, promise, resolveCache);
+        if (!doResolveAllCached(hostname, additionals, promise, resolveCache)) {
+            doResolveAllUncached(hostname, additionals, promise, resolveCache);
         }
     }
 
@@ -702,8 +705,8 @@ public class DnsNameResolver extends InetNameResolver {
      * Sends a DNS query with the specified question with additional records.
      */
     public Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> query(
-            DnsQuestion question, Iterable<DnsRecord> additional) {
-        return query(nextNameServerAddress(), question, additional);
+            DnsQuestion question, Iterable<DnsRecord> additionals) {
+        return query(nextNameServerAddress(), question, additionals);
     }
 
     /**
@@ -724,7 +727,7 @@ public class DnsNameResolver extends InetNameResolver {
     public Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> query(
             InetSocketAddress nameServerAddr, DnsQuestion question) {
 
-        return query0(nameServerAddr, question, null,
+        return query0(nameServerAddr, question, EMTPY_ADDITIONALS,
                 ch.eventLoop().<AddressedEnvelope<? extends DnsResponse, InetSocketAddress>>newPromise());
     }
 
@@ -734,7 +737,7 @@ public class DnsNameResolver extends InetNameResolver {
     public Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> query(
             InetSocketAddress nameServerAddr, DnsQuestion question, Iterable<DnsRecord> additionals) {
 
-        return query0(nameServerAddr, question, toArray(additionals),
+        return query0(nameServerAddr, question, toArray(additionals, false),
                 ch.eventLoop().<AddressedEnvelope<? extends DnsResponse, InetSocketAddress>>newPromise());
     }
 
@@ -745,7 +748,7 @@ public class DnsNameResolver extends InetNameResolver {
             InetSocketAddress nameServerAddr, DnsQuestion question,
             Promise<AddressedEnvelope<? extends DnsResponse, InetSocketAddress>> promise) {
 
-        return query0(nameServerAddr, question, null, promise);
+        return query0(nameServerAddr, question, EMTPY_ADDITIONALS, promise);
     }
 
     /**
@@ -756,27 +759,7 @@ public class DnsNameResolver extends InetNameResolver {
             Iterable<DnsRecord> additionals,
             Promise<AddressedEnvelope<? extends DnsResponse, InetSocketAddress>> promise) {
 
-        return query0(nameServerAddr, question, toArray(additionals), promise);
-    }
-
-    private static DnsRecord[] toArray(Iterable<DnsRecord> additionals) {
-        if (additionals instanceof Collection) {
-            Collection<DnsRecord> recordCollection = (Collection<DnsRecord>) additionals;
-            if (recordCollection.isEmpty()) {
-                return null;
-            }
-            return recordCollection.toArray(new DnsRecord[recordCollection.size()]);
-        }
-        Iterator<DnsRecord> recordIterator = additionals.iterator();
-        if (!recordIterator.hasNext()) {
-            return null;
-        }
-        List<DnsRecord> records = new ArrayList<DnsRecord>(4);
-        do {
-            records.add(recordIterator.next());
-        } while (recordIterator.hasNext());
-
-        return records.toArray(new DnsRecord[records.size()]);
+        return query0(nameServerAddr, question, toArray(additionals, false), promise);
     }
 
     Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> query0(
