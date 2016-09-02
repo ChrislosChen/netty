@@ -409,14 +409,12 @@ public class DnsNameResolver extends InetNameResolver {
         doResolve(inetHost, EMTPY_ADDITIONALS, promise, resolveCache);
     }
 
-    private static DnsRecord[] toArray(Iterable<DnsRecord> additionals, boolean validate) {
+    private static DnsRecord[] toArray(Iterable<DnsRecord> additionals, boolean validateType) {
         checkNotNull(additionals, "additionals");
         if (additionals instanceof Collection) {
             Collection<DnsRecord> records = (Collection<DnsRecord>) additionals;
-            if (validate) {
-                for (DnsRecord r: additionals) {
-                    validateAdditional(r);
-                }
+            for (DnsRecord r: additionals) {
+                validateAdditional(r, validateType);
             }
             return records.toArray(new DnsRecord[records.size()]);
         }
@@ -428,17 +426,16 @@ public class DnsNameResolver extends InetNameResolver {
         List<DnsRecord> records = new ArrayList<DnsRecord>();
         do {
             DnsRecord r = additionalsIt.next();
-            if (validate) {
-                validateAdditional(r);
-            }
+            validateAdditional(r, validateType);
             records.add(r);
         } while (additionalsIt.hasNext());
 
         return records.toArray(new DnsRecord[records.size()]);
     }
 
-    private static void validateAdditional(DnsRecord record) {
-        if (record instanceof DnsRawRecord) {
+    private static void validateAdditional(DnsRecord record, boolean validateType) {
+        checkNotNull(record, "record");
+        if (validateType && record instanceof DnsRawRecord) {
             throw new IllegalArgumentException("DnsRawRecord implementations not allowed: " + record);
         }
     }
