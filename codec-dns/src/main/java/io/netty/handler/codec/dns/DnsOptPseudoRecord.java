@@ -29,16 +29,16 @@ public interface DnsOptPseudoRecord extends DnsRecord {
     /**
      * Returns the {@code EXTENDED-RCODE} which is encoded into {@link DnsOptPseudoRecord#timeToLive()}.
      */
-    short extendedRcode();
+    int extendedRcode();
 
     /**
      * Returns the {@code VERSION} which is encoded into {@link DnsOptPseudoRecord#timeToLive()}.
      */
-    short version();
+    int version();
 
     /**
      * Returns the {@code flags} which includes {@code DO} and {@code Z} which is encoded
      * into {@link DnsOptPseudoRecord#timeToLive()}.
      */
-    short flags();
+    int flags();
 }

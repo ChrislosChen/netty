@@ -42,17 +42,17 @@ public abstract class AbstractDnsOptPseudoRrRecord extends AbstractDnsRecord imp
     }
 
     @Override
-    public short extendedRcode() {
+    public int extendedRcode() {
         return (short) (((int) timeToLive() >> 24) & 0xff);
     }
 
     @Override
-    public short version() {
+    public int version() {
         return (short) (((int) timeToLive() >> 16) & 0xff);
     }
 
     @Override
-    public short flags() {
+    public int flags() {
        return (short) ((short) timeToLive() & 0xff);
     }
 }
