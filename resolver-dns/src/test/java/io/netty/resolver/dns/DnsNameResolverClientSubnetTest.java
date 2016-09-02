@@ -46,7 +46,7 @@ public class DnsNameResolverClientSubnetTest {
                     Collections.<DnsRecord>singleton(
                             // Suggest max payload size of 1024
                             // 157.88.0.0 / 24
-                            new DefaultDnsOptEcsRecord(1024, 24, InetAddress.getByName("157.88.0.0"))));
+                            new DefaultDnsOptEcsRecord(1024, 24, InetAddress.getByName("157.88.0.0").getAddress())));
             for (InetAddress address: future.syncUninterruptibly().getNow()) {
                 System.err.println(address);
             }

@@ -339,31 +339,31 @@ public class DnsNameResolver extends InetNameResolver {
      * Resolves the specified name into an address.
      *
      * @param inetHost the name to resolve
-     * @param additional additional records ({@code OPT})
+     * @param additionals additional records ({@code OPT})
      *
      * @return the address as the result of the resolution
      */
-    public final Future<InetAddress> resolve(String inetHost, Iterable<DnsRecord> additional) {
-        return resolve(inetHost, additional, executor().<InetAddress>newPromise());
+    public final Future<InetAddress> resolve(String inetHost, Iterable<DnsRecord> additionals) {
+        return resolve(inetHost, additionals, executor().<InetAddress>newPromise());
     }
 
     /**
      * Resolves the specified name into an address.
      *
      * @param inetHost the name to resolve
-     * @param additional additional records ({@code OPT})
+     * @param additionals additional records ({@code OPT})
      * @param promise the {@link Promise} which will be fulfilled when the name resolution is finished
      *
      * @return the address as the result of the resolution
      */
-    public final Future<InetAddress> resolve(String inetHost, Iterable<DnsRecord> additional,
+    public final Future<InetAddress> resolve(String inetHost, Iterable<DnsRecord> additionals,
                                              Promise<InetAddress> promise) {
         checkNotNull(inetHost, "inetHost");
-        checkNotNull(additional, "additional");
+        checkNotNull(additionals, "additionals");
         checkNotNull(promise, "promise");
 
         try {
-            doResolve(inetHost, additional, promise, resolveCache);
+            doResolve(inetHost, validateAdditionals(additionals), promise, resolveCache);
             return promise;
         } catch (Exception e) {
             return promise.setFailure(e);
@@ -374,31 +374,31 @@ public class DnsNameResolver extends InetNameResolver {
      * Resolves the specified host name and port into a list of address.
      *
      * @param inetHost the name to resolve
-     * @param additional additional records ({@code OPT})
+     * @param additionals additional records ({@code OPT})
      *
      * @return the list of the address as the result of the resolution
      */
-    public final Future<List<InetAddress>> resolveAll(String inetHost, Iterable<DnsRecord> additional) {
-        return resolveAll(inetHost, additional, executor().<List<InetAddress>>newPromise());
+    public final Future<List<InetAddress>> resolveAll(String inetHost, Iterable<DnsRecord> additionals) {
+        return resolveAll(inetHost, additionals, executor().<List<InetAddress>>newPromise());
     }
 
     /**
      * Resolves the specified host name and port into a list of address.
      *
      * @param inetHost the name to resolve
-     * @param additional additional records ({@code OPT})
+     * @param additionals additional records ({@code OPT})
      * @param promise the {@link Promise} which will be fulfilled when the name resolution is finished
      *
      * @return the list of the address as the result of the resolution
      */
-    public final Future<List<InetAddress>> resolveAll(String inetHost, Iterable<DnsRecord> additional,
+    public final Future<List<InetAddress>> resolveAll(String inetHost, Iterable<DnsRecord> additionals,
                                                 Promise<List<InetAddress>> promise) {
         checkNotNull(inetHost, "inetHost");
-        checkNotNull(additional, "additional");
+        checkNotNull(additionals, "additionals");
         checkNotNull(promise, "promise");
 
         try {
-            doResolveAll(inetHost, additional, promise, resolveCache);
+            doResolveAll(inetHost, additionals, promise, resolveCache);
             return promise;
         } catch (Exception e) {
             return promise.setFailure(e);
@@ -407,7 +407,7 @@ public class DnsNameResolver extends InetNameResolver {
 
     @Override
     protected void doResolve(String inetHost, Promise<InetAddress> promise) throws Exception {
-        doResolve(inetHost, Collections.<DnsRecord>emptySet(), promise, resolveCache);
+        doResolve(inetHost, null, promise, resolveCache);
     }
 
     private static DnsRecord[] validateAdditionals(Iterable<DnsRecord> additionals) {
@@ -444,10 +444,9 @@ public class DnsNameResolver extends InetNameResolver {
      * instead of using the global one.
      */
     protected void doResolve(String inetHost,
-                             Iterable<DnsRecord> additionals,
+                             DnsRecord[] additionals,
                              Promise<InetAddress> promise,
                              DnsCache resolveCache) throws Exception {
-        DnsRecord[] additionalsArray = validateAdditionals(additionals);
         final byte[] bytes = NetUtil.createByteArrayFromIpAddressString(inetHost);
         if (bytes != null) {
             // The inetHost is actually an ipaddress.
@@ -463,8 +462,8 @@ public class DnsNameResolver extends InetNameResolver {
             return;
         }
 
-        if (!doResolveCached(hostname, additionalsArray, promise, resolveCache)) {
-            doResolveUncached(hostname, additionalsArray, promise, resolveCache);
+        if (!doResolveCached(hostname, additionals, promise, resolveCache)) {
+            doResolveUncached(hostname, additionals, promise, resolveCache);
         }
     }
 

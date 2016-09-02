@@ -26,44 +26,51 @@ import java.net.InetAddress;
 @UnstableApi
 public final class DefaultDnsOptEcsRecord extends AbstractDnsOptPseudoRrRecord implements DnsOptEcsRecord {
     private final int srcPrefixLength;
-    private final InetAddress address;
+    private final byte[] address;
 
     /**
      * Creates a new instance.
      *
-     * @param maxPayladSize the suggested max payload size in bytes
+     * @param maxPayloadSize the suggested max payload size in bytes
      * @param extendedRcode the extended rcode
      * @param version the version
      * @param srcPrefixLength the prefix length
-     * @param address the {@link InetAddress} to use
+     * @param address the bytes of the {@link InetAddress} to use
      */
-    public DefaultDnsOptEcsRecord(int maxPayladSize, int extendedRcode, int version,
-                                  int srcPrefixLength, InetAddress address) {
-        super(maxPayladSize, extendedRcode, version);
+    public DefaultDnsOptEcsRecord(int maxPayloadSize, int extendedRcode, int version,
+                                  int srcPrefixLength, byte[] address) {
+        super(maxPayloadSize, extendedRcode, version);
         this.srcPrefixLength = srcPrefixLength;
-        this.address = address;
+        this.address = verifyAddress(address).clone();
     }
 
     /**
      * Creates a new instance.
      *
-     * @param maxPayladSize the suggested max payload size in bytes
+     * @param maxPayloadSize the suggested max payload size in bytes
      * @param srcPrefixLength the prefix length
-     * @param address the {@link InetAddress} to use
+     * @param address the bytes of the {@link InetAddress} to use
      */
-    public DefaultDnsOptEcsRecord(int maxPayladSize, int srcPrefixLength, InetAddress address) {
-        this(maxPayladSize, 0, 0, srcPrefixLength, address);
+    public DefaultDnsOptEcsRecord(int maxPayloadSize, int srcPrefixLength, byte[] address) {
+        this(maxPayloadSize, 0, 0, srcPrefixLength, address);
     }
 
     /**
      * Creates a new instance.
      *
-     * @param maxPayladSize the suggested max payload size in bytes
+     * @param maxPayloadSize the suggested max payload size in bytes
      * @param protocolFamily the {@link InternetProtocolFamily} to use. This should be the same as the one used to
      *                       send the query.
      */
-    public DefaultDnsOptEcsRecord(int maxPayladSize, InternetProtocolFamily protocolFamily) {
-        this(maxPayladSize, 0, 0, 0, protocolFamily.localHost());
+    public DefaultDnsOptEcsRecord(int maxPayloadSize, InternetProtocolFamily protocolFamily) {
+        this(maxPayloadSize, 0, 0, 0, protocolFamily.localHost().getAddress());
+    }
+
+    private static byte[] verifyAddress(byte[] bytes) {
+        if (bytes.length == 4 || bytes.length == 16) {
+            return bytes;
+        }
+        throw new IllegalArgumentException("bytes.length must either 4 or 16");
     }
 
     @Override
@@ -77,7 +84,7 @@ public final class DefaultDnsOptEcsRecord extends AbstractDnsOptPseudoRrRecord i
     }
 
     @Override
-    public InetAddress address() {
-        return address;
+    public byte[] address() {
+        return address.clone();
     }
 }

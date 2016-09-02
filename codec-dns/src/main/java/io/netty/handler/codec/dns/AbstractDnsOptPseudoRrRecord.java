@@ -27,12 +27,12 @@ import io.netty.util.internal.UnstableApi;
 @UnstableApi
 public abstract class AbstractDnsOptPseudoRrRecord extends AbstractDnsRecord implements DnsOptPseudoRecord {
 
-    protected AbstractDnsOptPseudoRrRecord(int maxPayladSize, int extendedRcode, int version) {
-        super(StringUtil.EMPTY_STRING, DnsRecordType.OPT, maxPayladSize, packIntoLong(extendedRcode, version));
+    protected AbstractDnsOptPseudoRrRecord(int maxPayloadSize, int extendedRcode, int version) {
+        super(StringUtil.EMPTY_STRING, DnsRecordType.OPT, maxPayloadSize, packIntoLong(extendedRcode, version));
     }
 
-    protected AbstractDnsOptPseudoRrRecord(int maxPayladSize) {
-        super(StringUtil.EMPTY_STRING, DnsRecordType.OPT, maxPayladSize, 0);
+    protected AbstractDnsOptPseudoRrRecord(int maxPayloadSize) {
+        super(StringUtil.EMPTY_STRING, DnsRecordType.OPT, maxPayloadSize, 0);
     }
 
     // See https://tools.ietf.org/html/rfc6891#section-6.1.3

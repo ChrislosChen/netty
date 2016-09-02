@@ -104,7 +104,8 @@ public class DefaultDnsRecordEncoderTest {
         DefaultDnsRecordEncoder encoder = new DefaultDnsRecordEncoder();
         ByteBuf out = Unpooled.buffer();
         try {
-            DnsOptEcsRecord record = new DefaultDnsOptEcsRecord(payloadSize, extendedRcode, version, prefix, address);
+            DnsOptEcsRecord record = new DefaultDnsOptEcsRecord(
+                    payloadSize, extendedRcode, version, prefix, address.getAddress());
             encoder.encodeRecord(record, out);
 
             assertEquals(0, out.readByte()); // Name
@@ -129,7 +130,7 @@ public class DefaultDnsRecordEncoderTest {
             int rdataLength = out.readUnsignedShort();
             assertEquals(rdataLength, out.readableBytes());
 
-            assertEquals((short) InternetProtocolFamily.familyOf(address).addressNumber(), out.readShort());
+            assertEquals((short) InternetProtocolFamily.of(address).addressNumber(), out.readShort());
 
             assertEquals(prefix, out.readUnsignedByte());
             assertEquals(0, out.readUnsignedByte()); // This must be 0 for requests.

@@ -37,7 +37,7 @@ public interface DnsOptEcsRecord extends DnsOptPseudoRecord {
     int scopePrefixLength();
 
     /**
-     * Retuns the {@link InetAddress} to use.
+     * Retuns the bytes of the {@link InetAddress} to use.
      */
-    InetAddress address();
+    byte[] address();
 }

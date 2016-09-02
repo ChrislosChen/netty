@@ -84,7 +84,7 @@ public enum InternetProtocolFamily {
     /**
      * Returns the {@link InternetProtocolFamily} for the given {@link InetAddress}.
      */
-    public static InternetProtocolFamily familyOf(InetAddress address) {
+    public static InternetProtocolFamily of(InetAddress address) {
         if (address instanceof Inet4Address) {
             return IPv4;
         }

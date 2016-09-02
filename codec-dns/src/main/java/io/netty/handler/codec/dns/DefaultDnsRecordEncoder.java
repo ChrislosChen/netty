@@ -87,9 +87,8 @@ public class DefaultDnsRecordEncoder implements DnsRecordEncoder {
         int sourcePrefixLength = record.sourcePrefixLength();
         int scopePrefixLength = record.scopePrefixLength();
         int lowOrderBitsToPreserve = sourcePrefixLength & PREFIX_MASK;
-        InetAddress address = record.address();
 
-        byte[] bytes = address.getAddress();
+        byte[] bytes = record.address();
         int addressBits = bytes.length << 3;
         if (addressBits < sourcePrefixLength || sourcePrefixLength < 0) {
             throw new IllegalArgumentException(sourcePrefixLength + ": "
@@ -97,7 +96,8 @@ public class DefaultDnsRecordEncoder implements DnsRecordEncoder {
         }
 
         // See http://www.iana.org/assignments/address-family-numbers/address-family-numbers.xhtml
-        final short addressNumber = (short) InternetProtocolFamily.familyOf(address).addressNumber();
+        final short addressNumber = (short) (bytes.length == 4 ?
+                InternetProtocolFamily.IPv4.addressNumber() : InternetProtocolFamily.IPv6.addressNumber());
         int payloadLength = calculateEcsAddressLength(sourcePrefixLength, lowOrderBitsToPreserve);
 
         int fullPayloadLength = 2 // OPTION-CODE
